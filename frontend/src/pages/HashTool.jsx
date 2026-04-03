@@ -1,7 +1,7 @@
 
 import { useState, useRef } from "react";
 import ToolPage, { toolBtnClass, toolLabelClass } from "../components/ToolPage";
-import { API_BASE } from "../utils/api";
+import { apiFetchRaw } from "../utils/api";
 
 export default function HashTool() {
   const [file, setFile] = useState(null);
@@ -39,13 +39,10 @@ export default function HashTool() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await fetch(`${API_BASE}/hash`, {
+      const data = await apiFetchRaw("/hash", {
         method: "POST",
         body: formData,
       });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Hash failed");
 
       setHash(data.hash);
     } catch (e) {

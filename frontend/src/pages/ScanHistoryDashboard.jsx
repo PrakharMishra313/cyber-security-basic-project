@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import ToolPage from "../components/ToolPage";
-import { API_BASE } from "../utils/api";
+import { getScanHistory } from "../utils/api";
 
 export default function ScanHistoryDashboard() {
   const [loading, setLoading] = useState(true);
@@ -17,14 +17,19 @@ export default function ScanHistoryDashboard() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(`${API_BASE}/history?limit=50`)
-      .then((r) => r.json().then((j) => ({ ok: r.ok, j })))
-      .then(({ ok, j }) => {
-        if (!ok) throw new Error(j?.error || "Load history failed");
+    getScanHistory(50)
+      .then((j) => {
         if (!cancelled) setHistory(Array.isArray(j.history) ? j.history : []);
       })
       .catch((e) => {
-        if (!cancelled) setError(e.message || "Request failed");
+        if (!cancelled) {
+          const m = e.message || "Request failed";
+          setError(
+            /failed to fetch|networkerror/i.test(m)
+              ? `${m} Ensure the API is running and MongoDB is reachable for history.`
+              : m
+          );
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);

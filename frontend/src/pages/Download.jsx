@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import ToolPage, { toolBtnClass, toolInputClass, toolLabelClass } from "../components/ToolPage";
-import { API_BASE } from "../utils/api";
+import { downloadEncryptedFile, getFileInfo } from "../utils/api";
 
 export default function Download() {
   const { id } = useParams();
@@ -16,12 +16,7 @@ export default function Download() {
     let cancelled = false;
     setLoadingMeta(true);
     setMetaError("");
-    fetch(`${API_BASE}/file/${id}`)
-      .then(async (res) => {
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-        return data;
-      })
+    getFileInfo(id)
       .then((data) => {
         if (!cancelled) setFile(data);
       })
@@ -43,16 +38,7 @@ export default function Download() {
     setDownloadError("");
     setDownloading(true);
     try {
-      const res = await fetch(`${API_BASE}/download/${id}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
-      });
-      if (!res.ok) {
-        const errJson = await res.json().catch(() => ({}));
-        throw new Error(errJson.error || "Wrong password, expired, or download failed");
-      }
-      const blob = await res.blob();
+      const blob = await downloadEncryptedFile(id, password);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;

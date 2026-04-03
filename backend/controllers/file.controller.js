@@ -1,17 +1,17 @@
 const File = require("../models/File");
+const { FRONTEND_URL } = require("../config/config");
 const { encrypt, decrypt } = require("../services/cryptoService");
 
+// POST /api/upload
 exports.uploadFile = async (req, res) => {
   try {
     const { password, expiryMinutes } = req.body;
 
-    if (!password) {
-      return res.status(400).json({ error: "Password required" });
-    }
+    if (!password) return res.status(400).json({ error: "Password required" });
+    if (!req.file) return res.status(400).json({ error: "File required" });
 
     const { encrypted, salt, iv } = encrypt(req.file.buffer, password);
-
-    const expiresAt = new Date(Date.now() + expiryMinutes * 60000);
+    const expiresAt = new Date(Date.now() + parseInt(expiryMinutes, 10) * 60000);
 
     const file = await File.create({
       filename: req.file.originalname,
@@ -24,14 +24,14 @@ exports.uploadFile = async (req, res) => {
 
     res.json({
       id: file._id,
-      link: `http://localhost:5173/download/${file._id}`,
+      link: `${FRONTEND_URL}/download/${file._id}`,
     });
-
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
+// POST /api/download/:id
 exports.downloadFile = async (req, res) => {
   try {
     const { password } = req.body;
@@ -54,15 +54,29 @@ exports.downloadFile = async (req, res) => {
       "Content-Type": file.contentType,
       "Content-Disposition": `attachment; filename=${file.filename}`,
     });
-
     res.send(decrypted);
-
   } catch {
-    res.status(403).json({ error: "Wrong password" });
+    res.status(403).json({ error: "Wrong password or decryption failed" });
   }
 };
 
-exports.getFiles = async (req, res) => {
-  const files = await File.find().select("_id filename expiresAt");
-  res.json(files);
+// GET /api/files
+exports.listFiles = async (req, res) => {
+  try {
+    const files = await File.find().select("_id filename expiresAt");
+    res.json(files);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// GET /api/file/:id
+exports.getFileInfo = async (req, res) => {
+  try {
+    const file = await File.findById(req.params.id).select("filename contentType");
+    if (!file) return res.status(404).json({ error: "File not found" });
+    res.json({ id: file._id, name: file.filename, contentType: file.contentType });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };

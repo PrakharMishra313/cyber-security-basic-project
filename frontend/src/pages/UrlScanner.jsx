@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ToolPage, { toolBtnClass, toolInputClass, toolLabelClass } from "../components/ToolPage";
-import { API_BASE } from "../utils/api";
+import { postJson } from "../utils/api";
 
 export default function UrlScanner() {
   const [url, setUrl] = useState("");
@@ -14,13 +14,7 @@ export default function UrlScanner() {
     setError("");
     setResult(null);
     try {
-      const res = await fetch(`${API_BASE}/scan-url`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: url.trim() }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Scan failed");
+      const data = await postJson("/scan-url", { url: url.trim() });
       setResult(data);
     } catch (e) {
       setError(e.message || "Request failed");
@@ -54,7 +48,8 @@ export default function UrlScanner() {
       {error && <p className="text-sm text-red-400 font-mono">{error}</p>}
       {result && (
         <div className={`code-block font-mono ${result.safe ? "text-[#00ff9f]" : "text-amber-400"}`}>
-          {result.safe ? "Heuristic: URL looks relatively safe." : "Heuristic: possible phishing patterns."}
+          {result.message ||
+            (result.safe ? "Heuristic: URL looks relatively safe." : "Heuristic: possible phishing patterns.")}
         </div>
       )}
     </ToolPage>

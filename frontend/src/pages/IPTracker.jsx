@@ -4,7 +4,7 @@ import ToolPage, {
   toolInputClass,
   toolLabelClass,
 } from "../components/ToolPage";
-import { API_BASE } from "../utils/api";
+import { postJson } from "../utils/api";
 
 function isLikelyIp(input) {
   const v = String(input || "").trim();
@@ -36,13 +36,7 @@ export default function IPTracker() {
     setError("");
     setGeoData(null);
     try {
-      const res = await fetch(`${API_BASE}/ip-info`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ip: mode === "me" ? "" : value }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Lookup failed");
+      const data = await postJson("/ip-info", { ip: mode === "me" ? "" : value });
       setGeoData(data);
     } catch (e) {
       setError(e.message || "Request failed");

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ToolPage, { toolBtnClass, toolInputClass, toolLabelClass } from "../components/ToolPage";
-import { API_BASE } from "../utils/api";
+import { postJson, saveScanHistory } from "../utils/api";
 
 export default function SubdomainScanner() {
   const [domain, setDomain] = useState("");
@@ -18,13 +18,7 @@ export default function SubdomainScanner() {
     setSaveOk(false);
 
     try {
-      const res = await fetch(`${API_BASE}/subdomains`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ domain: domain.trim() }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Subdomain scan failed");
+      const data = await postJson("/subdomains", { domain: domain.trim() });
       setResults(data);
     } catch (e) {
       setError(e.message || "Request failed");
@@ -38,17 +32,11 @@ export default function SubdomainScanner() {
     setSaving(true);
     setSaveOk(false);
     try {
-      const res = await fetch(`${API_BASE}/history`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          toolName: "Subdomain Scanner",
-          input: { domain: domain.trim() },
-          result: results,
-        }),
+      await saveScanHistory({
+        toolName: "Subdomain Scanner",
+        input: { domain: domain.trim() },
+        result: results,
       });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Save failed");
       setSaveOk(true);
     } catch (e) {
       setError(e.message || "Save failed");

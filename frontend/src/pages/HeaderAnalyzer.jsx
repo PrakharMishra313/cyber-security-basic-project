@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import ToolPage, { toolBtnClass, toolInputClass, toolLabelClass } from "../components/ToolPage";
-import { API_BASE } from "../utils/api";
+import { postJson, saveScanHistory } from "../utils/api";
 
 export default function HeaderAnalyzer() {
   const [url, setUrl] = useState("");
@@ -30,13 +30,7 @@ export default function HeaderAnalyzer() {
     setSaveOk(false);
 
     try {
-      const res = await fetch(`${API_BASE}/header-analyze`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: url.trim() }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Header analysis failed");
+      const json = await postJson("/header-analyze", { url: url.trim() });
       setData(json);
     } catch (e) {
       setError(e.message || "Request failed");
@@ -50,17 +44,11 @@ export default function HeaderAnalyzer() {
     setSaving(true);
     setSaveOk(false);
     try {
-      const res = await fetch(`${API_BASE}/history`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          toolName: "HTTP Header Analyzer",
-          input: { url: url.trim() },
-          result: data,
-        }),
+      await saveScanHistory({
+        toolName: "HTTP Header Analyzer",
+        input: { url: url.trim() },
+        result: data,
       });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json.error || "Save failed");
       setSaveOk(true);
     } catch (e) {
       setError(e.message || "Save failed");

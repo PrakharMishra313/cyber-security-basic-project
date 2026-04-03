@@ -22,6 +22,7 @@ import HeaderAnalyzer from "./pages/HeaderAnalyzer";
 import ScanHistoryDashboard from "./pages/ScanHistoryDashboard";
 import JwtTool from "./pages/JwtTool";
 import IOCExtractor from "./pages/IOCExtractor";
+import NotFound from "./pages/NotFound";
 
 export default function App() {
   return (
@@ -49,6 +50,7 @@ export default function App() {
           <Route path="/history" element={<ScanHistoryDashboard />} />
           <Route path="/jwt" element={<JwtTool />} />
           <Route path="/ioc" element={<IOCExtractor />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Layout>
     </BrowserRouter>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ToolPage, { toolBtnClass, toolInputClass, toolLabelClass } from "../components/ToolPage";
-import { API_BASE } from "../utils/api";
+import { postJson } from "../utils/api";
 
 export default function PasswordChecker() {
   const [password, setPassword] = useState("");
@@ -13,13 +13,7 @@ export default function PasswordChecker() {
     setError("");
     setStrength(null);
     try {
-      const res = await fetch(`${API_BASE}/check-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Check failed");
+      const data = await postJson("/check-password", { password });
       setStrength(data);
     } catch (e) {
       setError(e.message || "Request failed");

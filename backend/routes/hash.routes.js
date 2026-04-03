@@ -1,33 +1,12 @@
-
-const express = require("express");
-const crypto = require("crypto");
+const { Router } = require("express");
 const multer = require("multer");
+const hashCtrl = require("../controllers/hash.controller");
 
-const router = express.Router();
-
-// store file in memory
+const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-router.post("/", upload.single("file"), (req, res) => {
-  console.log("🔥 FILE HASH ROUTE HIT");
-
-  // ✅ FIX: use req.file (NOT req.body)
-  if (!req.file) {
-    return res.status(400).json({ error: "No file uploaded" });
-  }
-
-  try {
-    const hash = crypto
-      .createHash("sha256")
-      .update(req.file.buffer)
-      .digest("hex");
-
-    res.json({ hash });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Hash generation failed" });
-  }
-});
+router.post("/hash",       upload.single("file"), hashCtrl.computeHash);
+router.post("/verify",     upload.single("file"), hashCtrl.verifyHash);
+router.post("/integrity",  upload.single("file"), hashCtrl.checkIntegrity);
 
 module.exports = router;
-

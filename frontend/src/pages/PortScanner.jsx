@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ToolPage, { toolBtnClass, toolInputClass, toolLabelClass } from "../components/ToolPage";
-import { API_BASE } from "../utils/api";
+import { postJson } from "../utils/api";
 
 export default function PortScanner() {
   const [host, setHost] = useState("");
@@ -14,13 +14,7 @@ export default function PortScanner() {
     setError("");
     setResults(null);
     try {
-      const res = await fetch(`${API_BASE}/scan-ports`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ host: host.trim() }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Scan failed");
+      const data = await postJson("/scan-ports", { host: host.trim() });
       setResults(data);
     } catch (e) {
       setError(e.message || "Request failed");

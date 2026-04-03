@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ToolPage, { toolBtnClass } from "../components/ToolPage";
-import { API_BASE } from "../utils/api";
+import { apiFetchRaw, saveScanHistory } from "../utils/api";
 
 export default function FileMetadataAnalyzer() {
   const [file, setFile] = useState(null);
@@ -35,13 +35,10 @@ export default function FileMetadataAnalyzer() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await fetch(`${API_BASE}/metadata`, {
+      const data = await apiFetchRaw("/metadata", {
         method: "POST",
         body: formData,
       });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Metadata analysis failed");
 
       setAnalysis(data);
     } catch (e) {
@@ -64,15 +61,7 @@ export default function FileMetadataAnalyzer() {
         result: analysis,
       };
 
-      const res = await fetch(`${API_BASE}/history`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Save failed");
-
+      await saveScanHistory(payload);
       setSaveOk(true);
     } catch (e) {
       setError(e.message || "Save failed");

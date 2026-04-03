@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import ToolPage, { toolBtnClass, toolInputClass, toolLabelClass, toolTextareaClass } from "../components/ToolPage";
-import { API_BASE } from "../utils/api";
+import { saveScanHistory } from "../utils/api";
 
 function bytesToBase64(bytes) {
   const bin = String.fromCharCode(...bytes);
@@ -142,23 +142,17 @@ export default function EncryptionTool() {
     setError("");
     setSaveOk(false);
     try {
-      const res = await fetch(`${API_BASE}/history`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          toolName: "Encryption / Decryption Tool",
-          input: {
-            mode,
-            plaintextLength: plaintext?.length || 0,
-          },
-          result: {
-            ciphertextLength: ciphertext?.length || 0,
-            base64Length: b64Out?.length || 0,
-          },
-        }),
+      await saveScanHistory({
+        toolName: "Encryption / Decryption Tool",
+        input: {
+          mode,
+          plaintextLength: plaintext?.length || 0,
+        },
+        result: {
+          ciphertextLength: ciphertext?.length || 0,
+          base64Length: b64Out?.length || 0,
+        },
       });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json.error || "Save failed");
       setSaveOk(true);
     } catch (e) {
       setError(e.message || "Save failed");

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ToolPage, { toolBtnClass, toolInputClass, toolLabelClass } from "../components/ToolPage";
-import { API_BASE } from "../utils/api";
+import { apiFetchRaw } from "../utils/api";
 
 export default function IntegrityCheck() {
   const [file, setFile] = useState(null);
@@ -18,9 +18,7 @@ export default function IntegrityCheck() {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("original", originalHash.trim());
-      const res = await fetch(`${API_BASE}/integrity`, { method: "POST", body: formData });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Check failed");
+      const data = await apiFetchRaw("/integrity", { method: "POST", body: formData });
       setResult(data);
     } catch (e) {
       setError(e.message || "Request failed");

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { API_BASE } from "../utils/api";
+import { downloadEncryptedFile, getFiles } from "../utils/api";
 
 export default function FileList({ refreshTrigger }) {
   const [files, setFiles] = useState([]);
@@ -7,8 +7,7 @@ export default function FileList({ refreshTrigger }) {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(`${API_BASE}/files`)
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error("Failed to load files"))))
+    getFiles()
       .then((data) => {
         if (!cancelled) setFiles(Array.isArray(data) ? data : []);
       })
@@ -21,24 +20,18 @@ export default function FileList({ refreshTrigger }) {
   }, [refreshTrigger]);
 
   const downloadFile = async (id, filename) => {
-    const res = await fetch(`${API_BASE}/download/${id}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ password: passwords[id] }),
-    });
+    try {
+      const blob = await downloadEncryptedFile(id, passwords[id] || "");
+      const url = URL.createObjectURL(blob);
 
-    if (!res.ok) return alert("❌ Wrong password or expired");
-
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert("Wrong password or download failed");
+    }
   };
 
   const isExpired = (date) => new Date(date) < new Date();

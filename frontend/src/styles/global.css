@@ -366,7 +366,7 @@ body {
   }
 
   .fade-in-up {
-    animation: none;
+    animation: fadeInUp 0.45s ease-out both;
   }
 
   @keyframes fadeInUp {

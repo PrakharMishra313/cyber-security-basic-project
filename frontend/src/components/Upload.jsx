@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { API_BASE } from "../utils/api";
+import { uploadSecureFile } from "../utils/api";
 
 export default function Upload({ refreshFiles }) {
   const [file, setFile] = useState(null);
@@ -13,18 +13,8 @@ export default function Upload({ refreshFiles }) {
 
     setLoading(true);
 
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("password", password);
-    formData.append("expiryMinutes", expiry);
-
     try {
-      const res = await fetch(`${API_BASE}/upload`, {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
+      const data = await uploadSecureFile(file, password, expiry);
       setLink(data.link);
       refreshFiles && refreshFiles();
     } catch {

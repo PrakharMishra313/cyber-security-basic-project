@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ToolPage, { toolBtnClass, toolInputClass, toolLabelClass } from "../components/ToolPage";
-import { API_BASE } from "../utils/api";
+import { postJson } from "../utils/api";
 
 export default function Shodan() {
   const [query, setQuery] = useState("");
@@ -14,13 +14,7 @@ export default function Shodan() {
     setError("");
     setResults(null);
     try {
-      const res = await fetch(`${API_BASE}/shodan`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: query.trim() }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Search failed");
+      const data = await postJson("/shodan", { query: query.trim() });
       setResults(data);
     } catch (e) {
       setError(e.message || "Request failed");

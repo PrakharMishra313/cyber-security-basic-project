@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ToolPage, { toolBtnClass, toolInputClass, toolLabelClass } from "../components/ToolPage";
-import { API_BASE } from "../utils/api";
+import { postJson } from "../utils/api";
 
 export default function Whois() {
   const [domain, setDomain] = useState("");
@@ -14,13 +14,7 @@ export default function Whois() {
     setError("");
     setData(null);
     try {
-      const res = await fetch(`${API_BASE}/whois`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ domain: domain.trim() }),
-      });
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "WHOIS failed");
+      const result = await postJson("/whois", { domain: domain.trim() });
       setData(result);
     } catch (e) {
       setError(e.message || "Request failed");
