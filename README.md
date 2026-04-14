@@ -80,6 +80,7 @@ Frontend Render service:
 - `FRONTEND_URL` should be the deployed frontend origin, without a trailing slash.
 - `VITE_API_URL` should point to the backend `/api` base, not just the domain.
 - If you change one Render URL after deploy, update the matching env var in the other service.
+- This repo expects Node `22.x` for Render builds.
 
 Do **not** commit `.env` files. This repo is set up to ignore them.
 
