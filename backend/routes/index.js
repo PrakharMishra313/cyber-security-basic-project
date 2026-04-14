@@ -26,6 +26,10 @@ const networkRoutes = require("./network.routes");
 const threatRoutes = require("./threat.routes");
 const vtRoutes = require("./virustotal.routes");
 
+router.get("/health", (_req, res) => {
+  res.json({ ok: true, service: "backend" });
+});
+
 router.use(fileRoutes);
 router.use(hashRoutes);
 router.use(historyRoutes);

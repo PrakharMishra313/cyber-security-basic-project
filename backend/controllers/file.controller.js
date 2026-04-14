@@ -9,9 +9,13 @@ exports.uploadFile = async (req, res) => {
 
     if (!password) return res.status(400).json({ error: "Password required" });
     if (!req.file) return res.status(400).json({ error: "File required" });
+    const expiry = Number.parseInt(expiryMinutes, 10);
+    if (!Number.isFinite(expiry) || expiry <= 0) {
+      return res.status(400).json({ error: "expiryMinutes must be a positive integer" });
+    }
 
     const { encrypted, salt, iv } = encrypt(req.file.buffer, password);
-    const expiresAt = new Date(Date.now() + parseInt(expiryMinutes, 10) * 60000);
+    const expiresAt = new Date(Date.now() + expiry * 60000);
 
     const file = await File.create({
       filename: req.file.originalname,

@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: cyber-security-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: MONGO_URI
+        sync: false
+      - key: VT_API_KEY
+        sync: false
+      - key: SHODAN_API_KEY
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+
+  - type: static_site
+    name: cyber-security-frontend
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    pullRequestPreviewsEnabled: false
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: VITE_API_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
